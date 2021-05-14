@@ -51,7 +51,7 @@
           .then(function (text) {
             text = text.replaceAll("\\", "");
             console.log(text);
-            var split = text.split(`"createTime":"`);
+            var split = text.split(`"createTime":`);
             split = split[1].split(`"`);
 
             var formatted = dayjs
