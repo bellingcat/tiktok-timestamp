@@ -41,7 +41,7 @@
           Connection: "keep-alive",
         };
 
-        resp = fetch("https://thingproxy.freeboard.io/fetch/" + url, {
+        resp = fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url), {
           method: "GET",
           headers: headers,
         })
