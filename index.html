@@ -49,7 +49,7 @@
             return r.text();
           })
           .then(function (text) {
-            text = text.replaceAll("\", "");
+            text = text.replaceAll("\\", "");
             var split = text.split(`"createTime":"`);
             split = split[1].split(`"`);
 
