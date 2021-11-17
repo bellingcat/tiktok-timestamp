@@ -1,23 +1,15 @@
 <html>
   <head>
     <title>Tiktok date extractor</title>
-    <script src="https://unpkg.com/dayjs"></script>
-    <script src="https://unpkg.com/dayjs-plugin-utc"></script>
-    <script>
-      dayjs.extend(dayjsPluginUTC.default);
-    </script>
-
     <style>
       body {
         margin: 1em;
         font-family: "Helvetica", Arial, sans-serif;
         font-size: 18px;
       }
-
       button, input {
           font-size: 16px;
       }
-
       .form {
           margin-bottom: 1em;
       }
@@ -25,48 +17,45 @@
   </head>
   <body>
     <script>
-      function getdate() {
-        document.getElementById("date").innerHTML = "...";
-        document.getElementById("label").innerHTML = "Uploaded on: ";
+      function getVidId() {
+        const tiktokUrl= document.querySelector("#url").value;
+        // This regex should be safe as "Only letters, numbers, underscores, or periods are allowed" in TikTok usernames.
+        const regex = /(?<=\/video\/)(.*?)(?=$|[^0-9])/;
+        const vidId = regex.exec(tiktokUrl)[0];
+        return vidId;
+      }
 
-        var url = document.getElementById("url").value;
+      function extractUnixTimestamp(vidId) {
+        // BigInt needed as we need to treat vidId as 64 bit decimal. This reduces browser support.
+        const asBinary = BigInt(vidId).toString(2);
+        const first31Chars = asBinary.slice(0, 31);
+        const timestamp = parseInt(first31Chars, 2);
+        return timestamp;
+      }
 
-        var headers = {
-          Origin: "https://www.tiktok.com",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15",
-          "Accept-Language": "en-us",
-          Connection: "keep-alive",
-        };
+      function unixTimestampToHumanDate(timestamp) {
+        const milliseconds = timestamp * 1000;
+        const dateObject = new Date(milliseconds);
+        const humanDateFormat = dateObject.toUTCString()+" (UTC)";
+        return humanDateFormat;
+      }
 
-        resp = fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url), {
-          method: "GET",
-          headers: headers,
-        })
-          .then(function (r) {
-            return r.text();
-          })
-          .then(function (text) {
-            text = text.replaceAll("\\", "");
-            var split = text.split(`"createTime":`);
-            split = split[1].split(`,`);
-
-            var formatted = dayjs
-              .utc(+split[0] * 1000)
-              .format("MMM D YYYY, HH:mm:ss UTC");
-
-            document.getElementById("date").innerHTML = formatted;
-          });
+      function getDate() {
+        const vidId = getVidId();
+        const unixTimestamp = extractUnixTimestamp(vidId);
+        const humanDateFormat = unixTimestampToHumanDate(unixTimestamp);
+        document.querySelector("#date").textContent = humanDateFormat;
       }
     </script>
 
     <div class="form">
       <label for="url">Tiktok video URL:</label>
       <input type="text" id="url" name="url" />
-      <button onclick="getdate()">Get uploaded date</button>
+      <button onclick="getDate()">Get uploaded date</button>
     </div>
-    <div class="output"><span id="label">Uploaded on: </span><span class="date" id="date"></span></div>
+    <div class="output">
+      <span id="label">Uploaded on: </span>
+      <span id="date"></span>
+    </div>
   </body>
 </html>
