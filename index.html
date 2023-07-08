@@ -25,9 +25,21 @@
         return vidId;
       }
 
+      function decimalToBinary(decimal){
+        const binaryArray = [];
+        while (decimal !== '0') {
+          binaryArray.unshift(Number(decimal.slice(-1)) % 2);
+          decimal = decimal
+            .split('')
+            .filter((char, i) => !(i === 0 && char === '0'))
+            .map((char, i, a) => ((a[i] >> 1) + (a[i - 1] % 2 ? 5 : 0)))
+            .join('');
+        }
+        return binaryArray.length ? binaryArray.map(Number).join('') : '0';
+      }
+
       function extractUnixTimestamp(vidId) {
-        // BigInt needed as we need to treat vidId as 64 bit decimal. This reduces browser support.
-        const asBinary = BigInt(vidId).toString(2);
+        const asBinary = decimalToBinary(vidId);
         const first31Chars = asBinary.slice(0, 31);
         const timestamp = parseInt(first31Chars, 2);
         return timestamp;
